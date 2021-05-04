@@ -23,7 +23,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class ApiUtil {
 
 	final static Logger logger = LoggerFactory.getLogger(ApiUtil.class);
@@ -48,10 +47,17 @@ public class ApiUtil {
 				});
 			}
 			CloseableHttpResponse response = httpClient.execute(get);
-			int statusLine = response.getStatusLine().getStatusCode();
-			logger.debug("In get {} {}", url, statusLine);
-			HttpEntity entity = response.getEntity();
-			resp = new JSONObject(EntityUtils.toString(entity));
+			switch (response.getStatusLine().getStatusCode()) {
+			case 200:
+				HttpEntity entity = response.getEntity();
+				resp = new JSONObject(EntityUtils.toString(entity));
+				break;
+
+			default:
+				logger.error("{}", response.getStatusLine().getReasonPhrase());
+				resp = null;
+				break;
+			}
 		} catch (Exception e) {
 			resp = new JSONObject().put("error", e.getMessage());
 		}
@@ -60,7 +66,7 @@ public class ApiUtil {
 
 	public static CloseableHttpClient getHttpClient(String url)
 			throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-		int timeout = 500; // seconds
+		int timeout = 50; // seconds
 		RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
 				.setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000).build();
 		if (url.startsWith("https://")) {

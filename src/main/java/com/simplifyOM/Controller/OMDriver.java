@@ -6,13 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simplifyOM.DTO.Attributes;
 import com.simplifyOM.DTO.Module;
 import com.simplifyOM.DTO.OMdetails;
@@ -26,7 +23,7 @@ public class OMDriver implements ObjectHandler {
 
 	private Logger logger = LoggerFactory.getLogger(OMDriver.class);
 	private OMdetails omDetails;
-	private String url = "http://172.104.33.173:4000/api/v1/project";
+	private String url = "https://simplifyom.app/api/v1/project";
 	private HashMap<String, String> header = new HashMap<String, String>();
 
 	private Project getProject() throws JSONException {
@@ -37,6 +34,8 @@ public class OMDriver implements ObjectHandler {
 				JSONObject res = ApiUtil.get(
 						url + File.separator + this.omDetails.getOmDetail().get("projectId") + "/modules", null,
 						header);
+				if (res == null)
+					throw new Exception("Failed to fetch data");
 				for (int i = 0; i < res.getJSONArray("data").length(); i++) {
 					Module mod = new Module();
 					mod.setId(res.getJSONArray("data").getJSONObject(i).getString("id"));
@@ -51,7 +50,7 @@ public class OMDriver implements ObjectHandler {
 				return null;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+				logger.error("Unable to fetch data.");
 			return null;
 		}
 	}
@@ -142,16 +141,29 @@ public class OMDriver implements ObjectHandler {
 		}
 	}
 
-	public static void main(String[] args) {
-		OMdetails om = new OMdetails();
-		OMDriver driver = new OMDriver();
-		om.setOMCapabilities("token", "390b280ae6628b850a74ceccc4275efa980eb7b7d151a59b");
-		om.setOMCapabilities("projectId", "136");
-		try {
-			System.out.println(new ObjectMapper().writeValueAsString(driver.setOMCapabilities(om).getModuleByName("adf").getPageByName("Maven Repository: org.json » json » 20090211 - artifact-org.json")));
-		} catch (IOException | JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	// public static void main(String[] args) {
+	// 	OMdetails om = new OMdetails();
+
+	// 	OMDriver driver = new OMDriver();
+
+	// 	om.setOMCapabilities("token", "49f29bf5f6fd768d1ca3a648697affd8482121ffe9bbb52a");
+
+	// 	om.setOMCapabilities("projectId", "14");
+
+	// 	try {
+
+	// 		String objName = driver.setOMCapabilities(om).getModuleByName("userstory").getPageByName("SimplifyQA")
+	// 				.getObjectByName("Name").getAttrByName("xpathIdRelative");
+
+	// 		System.out.println(objName);
+
+	// 	} catch (JSONException e) {
+
+	// 		// TODO Auto-generated catch block
+
+	// 		e.printStackTrace();
+
+	// 	}
+
+	// }
 }
